@@ -11,10 +11,10 @@ $ virtualenv env
 # Activate virtual envirement
 $ source env/bin/activate
 
-# Install pakecli command line tool
+# Install all packages required ot run the analysis
 $ pip install --editable .
 
-# Running the flask app
+# Running the script for analysis
 $ python <script_name>
 ```
 
