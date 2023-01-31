@@ -11,7 +11,7 @@ $ virtualenv env
 # Activate virtual envirement
 $ source env/bin/activate
 
-# Install all packages required ot run the analysis
+# Install all packages required to run the analysis
 $ pip install --editable .
 
 # Running the script for analysis
