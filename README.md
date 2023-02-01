@@ -1,4 +1,4 @@
-# Reproducible Builds
+# Replication package for Reproducible Builds study
 Code in this repository corresponds to the `Unreproducible builds: Time to fix, causes, and
 correlation with external ecosystem factors` paper submitted at the Empirical Software Engineering journal.
 
