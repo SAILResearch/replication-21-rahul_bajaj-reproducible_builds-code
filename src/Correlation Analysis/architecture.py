@@ -9,6 +9,39 @@ def intersection(lst1, lst2):
   return list(set(lst1) & set(lst2))
 
 
+def domain_oriented_analysis(dataframe):
+  categorized_packages = pd.read_csv("../../data/categorized-debian-packages.csv")
+  categorized_dataset = pd.merge(dataframe, categorized_packages, left_on='name_x', right_on='packages')
+  max_frequency_domains = categorized_dataset.type.value_counts().index
+
+  final_dict = {}
+  for domain in max_frequency_domains:
+    filtered_df = categorized_dataset[categorized_dataset.type == domain]
+    filtered_df.loc[filtered_df['armhf_status'] == 'reproducible', 'armhf_status'] = 1
+    filtered_df.loc[filtered_df['armhf_status'] != 1, 'armhf_status'] = 0
+    filtered_df.loc[filtered_df['arm64_status'] == 'reproducible', 'arm64_status'] = 1
+    filtered_df.loc[filtered_df['arm64_status'] != 1, 'arm64_status'] = 0
+    dataset_tbl = pd.crosstab(filtered_df['armhf_status'], filtered_df['arm64_status'])
+    stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
+    effect_size = association(dataset_tbl, method="cramer")
+    final_dict[domain] = (stat, p, dof, expected, effect_size)
+
+  significant = []
+  not_sig = []
+  for keys in final_dict.keys():
+    if final_dict[keys][1] <= 0.01:
+      significant.append(keys)
+    else:
+      not_sig.append(keys)
+
+  print("\nDomain Analysis:")
+  print('Statistically Significant Correlation for distribution: \nDomain: Effect Size')
+  for k, v in final_dict.items():
+    if k in significant:
+      print(k, v[4])
+  print('Number of domains with statistically significant correlation: ', len(significant))
+
+
 def main():
   # Load required datasets
   distributions_tbl = pd.read_csv("../../data/distributions.csv", sep=",")
@@ -62,12 +95,16 @@ def main():
 
   dataset_tbl = pd.crosstab(dataframe['armhf_status'], dataframe['arm64_status'])
   observed_values = dataset_tbl.values
+
+  print("Correlation Analysis:")
   print("Observed Values :-\n", observed_values)
 
   stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
   print("Values of chi-quare statistics is: %f" % stat)
   print("p-value is: %f" % p)
-  print("Effect size: \n", association(dataset_tbl, method="cramer"))
+  print("Effect size: ", association(dataset_tbl, method="cramer"))
+
+  domain_oriented_analysis(dataframe)
 
 if __name__ == '__main__':
   main()

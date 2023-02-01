@@ -1,9 +1,44 @@
-import pandas as pd
-import numpy as np
 import scipy.stats as stats
 from scipy.stats.contingency import association
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
+
+
+def domain_oriented_analysis(df1):
+  categorised_pkg_df = pd.read_csv("../../data/categorized-debian-packages.csv")
+  rq3_categorised_packages_df = df1.merge(categorised_pkg_df, on="packages")
+  max_frequency_domains = rq3_categorised_packages_df.type.value_counts().index
+
+  final_dict = {}
+  for domain in max_frequency_domains:
+    filtered_df = rq3_categorised_packages_df[rq3_categorised_packages_df.type == domain]
+    filtered_df.loc[filtered_df['status'] == 'reproducible', 'status'] = 1
+    filtered_df.loc[filtered_df['status'] != 1, 'status'] = 0
+    filtered_df.loc[filtered_df['dependency status'] == 'reproducible', 'dependency status'] = 1
+    filtered_df.loc[filtered_df['dependency status'] != 1, 'dependency status'] = 0
+    domain_df = filtered_df.groupby(['packages', 'status'], as_index=False).agg({'dependency status': 'min'})
+    dataset_tbl = pd.crosstab(domain_df.status, domain_df['dependency status'])
+    stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
+    effect_size = association(dataset_tbl, method="cramer")
+    final_dict[domain] = (stat, p, dof, expected, effect_size)
+
+  significant = []
+  not_sig = []
+  for keys in final_dict.keys():
+    if final_dict[keys][1] <= 0.01:
+      significant.append(keys)
+    else:
+      not_sig.append(keys)
+
+  print("\nDomain Analysis:")
+  print('Statistically Significant Correlation for distribution: \nDomain: Effect Size')
+  for k, v in final_dict.items():
+    if k in significant:
+      print(k, v[4])
+  print('Number of domains with statistically significant correlation: ', len(significant))
 
 
 def main():
@@ -48,12 +83,15 @@ def main():
   df2 = df1.groupby(['packages', 'status'], as_index=False).agg({'dependency status': 'min'})
   dataset_tbl = pd.crosstab(df2.status, df2['dependency status'])
   observed_values = dataset_tbl.values
+  print("Correlation Analysis:")
   print("Observed Values :-\n", observed_values)
 
   stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
-  print("Values of chi-quare statistics is: %f \n" % stat)
-  print(f"p-value is: {p:.20f} \n")
-  print("Effect size: \n", association(dataset_tbl, method="cramer"))
+  print("Values of chi-quare statistics is: %f" % stat)
+  print(f"p-value is: {p:.20f}")
+  print("Effect size: ", association(dataset_tbl, method="cramer"))
+
+  domain_oriented_analysis(df1)
 
 if __name__ == '__main__':
   main()

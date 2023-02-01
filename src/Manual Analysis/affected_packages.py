@@ -2,6 +2,7 @@ import urllib.request
 from html_table_parser.parser import HTMLTableParser
 import pandas as pd
 import warnings
+import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 
 
@@ -9,6 +10,33 @@ def url_get_contents(url):
   req = urllib.request.Request(url=url)
   f = urllib.request.urlopen(req)
   return f.read()
+
+
+def is_package_affected(rq2_mod):
+  issue_packages_list = rq2_mod[['issue_name', 'concencus_list', 'affected_packages']]
+  affected_package_summary = issue_packages_list.affected_packages.value_counts().to_frame()
+  affected_package_summary.affected_packages.mean()
+  affected_package_summary.affected_packages.describe()
+  affected_package_summary = affected_package_summary[affected_package_summary.affected_packages < 89]
+
+
+  plt.rcParams.update({'font.size': 6})
+  fig, axes = plt.subplots(figsize=(2, 2))
+  g = axes.violinplot(affected_package_summary["affected_packages"], showmeans=False, showmedians=False,
+                      showextrema=False)
+  for pc in g['bodies']:
+    pc.set_facecolor('orange')
+    pc.set_edgecolor('black')
+    pc.set_alpha(1)
+  axes.set_xlabel('Affected Packages')
+  axes.set_ylabel('Number of Root Causes')
+  axes.spines['right'].set_visible(False)
+  axes.spines['top'].set_visible(False)
+
+  plt.tight_layout()
+  plt.tick_params(labelbottom=False, bottom=False)
+  plt.savefig("../../figures/affected_packages.pdf", dpi=2000)
+  plt.show()
 
 
 def main():
@@ -60,6 +88,8 @@ def main():
   rq2_mod_3 = rq2_mod[['concencus_list', 'affected_packages']]
   rq2_mod_3 = rq2_mod_3.drop_duplicates()
   print(rq2_mod_3.concencus_list.value_counts())
+
+  is_package_affected(rq2_mod)
 
 if __name__ == '__main__':
   main()
