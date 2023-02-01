@@ -2,7 +2,7 @@
 Code in this repository corresponds to the `Unreproducible Build` paper submitted at the Empirical Software Engineering journal.
 
 ## Installation and execution
-Data for this study is shared on [Dropbox](https://www.dropbox.com/s/n8tepo0hn21jfh6/data.zip?dl=0). Unzip the file data.zip into the root of this repository.
+Data for this study is shared on [Dropbox](https://www.dropbox.com/s/n8tepo0hn21jfh6/data.zip?dl=0). Additionally, data is attached in the release notes. Unzip the file data.zip into the root of this repository.
 
 ```
 # Create virtual envirement 
