@@ -4,7 +4,7 @@ correlation with external ecosystem factors` paper submitted to the Empirical So
 
 The `src` folder contains code for survival analysis, manual labeling and correlation analysis that correspond to the three research questions explored in the paper. We use the Python programming language to perform the aforementioned analysis. Once the source code is executed, figures generated during execution will be stored in the `figures` folder.  
 
-## Abstact
+## Abstract
 
 **Context** A reproducible build occurs if, given the same source code, build instructions, and dependencies, compiling a software project repeatedly generates the same build artifacts. Reproducible builds are essential to identify tampering attempts responsible for supply chain attacks, with most of the research on reproducible builds considering build reproducibility as a project-specific issue. In contrast, modern software projects are part of a larger ecosystem and depend on dozens of other projects, which begs the question of to what extent build reproducibility of a project is the responsibility of that project or perhaps something forced on it. 
 
@@ -23,10 +23,10 @@ The `src` folder contains code for survival analysis, manual labeling and correl
 This code has been tested to run on Fedora 35 with Python 3.10 version. However, this program must run on any operating system with Python > 3.0 version.
 
 ```
-# Create virtual envirement 
+# Create virtual environment 
 $ virtualenv env
 
-# Activate virtual envirement
+# Activate virtual environment
 $ source env/bin/activate
 
 # Install all packages required to run the analysis
