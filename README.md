@@ -40,7 +40,7 @@ $ python <script_name>
 
 ## Co-authors
 
-Rahul Bajaj
-Eduardo Fernandes
-Bram Adams
+Rahul Bajaj  
+Eduardo Fernandes  
+Bram Adams  
 Ahmed E. Hassan
