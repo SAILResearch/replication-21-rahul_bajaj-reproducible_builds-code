@@ -30,13 +30,20 @@ $ virtualenv env
 $ source env/bin/activate
 
 # Install all packages required to run the analysis
-$ pip install --editable .
+$ pip3 install --editable .
 
 # Running the script for analysis
-$ python <script_name>
+$ python3 <script_name>
 ```
 
-**Note** Analyses conducted in this study have been tested on a system with 12 threads. You can check the number of threads in your system by using commands like `htop`. Update the number of threads for faster processing of [survival analysis](https://github.com/SAILResearch/wip-21-rahul_bajaj-reproducible_builds-code/blob/main/src/Survival%20Analysis/survival_of_reproducible_packages.py#L97)
+## Notes
+
+**Survival Analysis**: Analyses conducted in this study have been tested on a system with 12 threads. You can check the number of threads in your system by using commands like `htop`. Update the number of threads for faster processing of [survival analysis](https://github.com/SAILResearch/wip-21-rahul_bajaj-reproducible_builds-code/blob/main/src/Survival%20Analysis/survival_of_reproducible_packages.py#L97)
+
+**Correlation Analysis**:
+1. The program `get_build_dependencies.py` will generate a new file in the `data` folder, namely `debian_dependency_graph_tbl_new.csv`. The data in this file is scrpaed from the Debian packages [website](https://sources.debian.org/data/main/). The new file generated may output different build dependencies, and therefore we use the `debian_dependency_graph_tbl.csv` file, in `build_dependencies.py`,  which was run at the time of performing the experiment.
+
+2. The program `get_runtime_dependencies.py` needs to be run in a Debian 11 machine. During the time of the experiment, we use a [vagrant machine](https://developer.hashicorp.com/vagrant/docs/installation) to create the same. Paste the program `get_runtime_dependencies.py` in a vagrant machine to obtain the `transitive_dependencies.csv` file as given in the data folder.
 
 ## Co-authors
 

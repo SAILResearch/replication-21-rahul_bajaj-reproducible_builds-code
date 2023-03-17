@@ -36,13 +36,13 @@ def send_request(pkg_version):
 
 def main():
   # Load databases
-  pkg_version_data = open("data.pkl", "rb")
+  pkg_version_data = open("../../data/data.pkl", "rb")
   pkg_version = pickle.load(pkg_version_data)
   pkg_dep_dict = send_request(pkg_version)
 
   df = pd.DataFrame([(key, var) for (key, L) in pkg_dep_dict.items() for var in L],
                  columns=['packages', 'dependencies'])
-  df.to_csv('debian_dependency_graph_tbl.csv', index=False)
+  df.to_csv('../../data/debian_dependency_graph_tbl.csv', index=False)
 
 
 if __name__ == '__main__':
