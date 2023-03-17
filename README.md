@@ -43,7 +43,7 @@ $ python3 <script_name>
 **Correlation Analysis**:
 1. The program `get_build_dependencies.py` will generate a new file in the `data` folder, namely `debian_dependency_graph_tbl_new.csv`. The data in this file is scrpaed from the Debian packages [website](https://sources.debian.org/data/main/). The new file generated may output different build dependencies, and therefore we use the `debian_dependency_graph_tbl.csv` file, in `build_dependencies.py`,  which was run at the time of performing the experiment.
 
-2. The program `get_runtime_dependencies.py` needs to be run in a Debian 11 machine. During the time of the experiment, we use a [vagrant machine](https://developer.hashicorp.com/vagrant/docs/installation) to create the same. Paste the program `get_runtime_dependencies.py` in a vagrant machine to obtain the `transitive_dependencies.csv` file as given in the data folder.
+2. The program `get_runtime_dependencies.py` needs to be run in a Debian 11 machine. During the time of the experiment, we use a [vagrant machine](https://developer.hashicorp.com/vagrant/docs/installation) to create the same. Paste and run the program `get_runtime_dependencies.py` in a Debian 11 vagrant machine to obtain the `transitive_dependencies.csv` file as given in the data folder.
 
 ## Co-authors
 
