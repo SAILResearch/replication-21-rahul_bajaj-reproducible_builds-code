@@ -41,6 +41,36 @@ def domain_oriented_analysis(dataframe):
       print(k, v[4])
   print('Number of domains with statistically significant correlation: ', len(significant))
 
+def get_correlation(debian_packages, archlinux_packages, check_common_packages_in_debian_and_archlinux):
+  common_pkg_in_debian = debian_packages[debian_packages.name_x.isin(check_common_packages_in_debian_and_archlinux)]
+  common_pkg_in_debian = common_pkg_in_debian.rename(columns={'status': 'debian status'})
+
+  common_pkg_in_archlinux = archlinux_packages[
+    archlinux_packages.name_x.isin(check_common_packages_in_debian_and_archlinux)]
+  common_pkg_in_archlinux = common_pkg_in_archlinux.rename(columns={'status': 'arch status'})
+
+  deb_arch_merge = pd.merge(common_pkg_in_debian, common_pkg_in_archlinux, on='name_x', validate='1:1')
+  dataframe = deb_arch_merge[['name_x', 'debian status', 'arch status']]
+
+  dataframe.loc[dataframe['debian status'] == 'reproducible', 'debian status'] = 1
+  dataframe.loc[dataframe['debian status'] != 1, 'debian status'] = 0
+  dataframe.loc[dataframe['arch status'] == 'reproducible', 'arch status'] = 1
+  dataframe.loc[dataframe['arch status'] != 1, 'arch status'] = 0
+
+  dataset_tbl = pd.crosstab(dataframe['debian status'], dataframe['arch status'])
+
+  observed_values = dataset_tbl.values
+  print("\nCorrelation Analysis:")
+  print("Observed Values :-\n", observed_values)
+
+  stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
+  print("Values of chi-quare statistics is: %f" % stat)
+  print("p-value is: %f" % p)
+  print("Effect size: ", association(dataset_tbl, method="cramer"))
+
+  domain_oriented_analysis(dataframe)
+  print("-------------------------------")
+
 
 def main():
   # Load required datasets
@@ -73,37 +103,16 @@ def main():
   check_common_packages_in_debian_and_archlinux = intersection(debian_packages, archlinux_package)
   print("Intersect of packages in debian and archlinux: " + str(len(check_common_packages_in_debian_and_archlinux)))
 
-  debian_packages = df.groupby("name_x").first().reset_index()
-  archlinux_packages = df1.groupby("name_x").first().reset_index()
+  df['rank_num'] = df.groupby("name_x")['trim_date'].rank(method="first", ascending=False)
+  df1['rank_num'] = df1.groupby("name_x")['trim_date'].rank(method="first", ascending=False)
 
-  common_pkg_in_debian = debian_packages[debian_packages.name_x.isin(check_common_packages_in_debian_and_archlinux)]
-  common_pkg_in_debian = common_pkg_in_debian.rename(columns={'status': 'debian status'})
+  debian_packages = df[df['rank_num'] == 1.0]
+  archlinux_packages = df1[df1['rank_num'] == 1.0]
+  get_correlation(debian_packages, archlinux_packages, check_common_packages_in_debian_and_archlinux)
 
-  common_pkg_in_archlinux = archlinux_packages[
-    archlinux_packages.name_x.isin(check_common_packages_in_debian_and_archlinux)]
-  common_pkg_in_archlinux = common_pkg_in_archlinux.rename(columns={'status': 'arch status'})
-
-  deb_arch_merge = pd.merge(common_pkg_in_debian, common_pkg_in_archlinux, on='name_x', validate='1:1')
-  dataframe = deb_arch_merge[['name_x', 'debian status', 'arch status']]
-
-  dataframe.loc[dataframe['debian status'] == 'reproducible', 'debian status'] = 1
-  dataframe.loc[dataframe['debian status'] != 1, 'debian status'] = 0
-  dataframe.loc[dataframe['arch status'] == 'reproducible', 'arch status'] = 1
-  dataframe.loc[dataframe['arch status'] != 1, 'arch status'] = 0
-
-  dataset_tbl = pd.crosstab(dataframe['debian status'], dataframe['arch status'])
-
-  observed_values = dataset_tbl.values
-  print("\nCorrelation Analysis:")
-  print("Observed Values :-\n", observed_values)
-
-  stat, p, dof, expected = stats.chi2_contingency(dataset_tbl)
-  print("Values of chi-quare statistics is: %f" % stat)
-  print("p-value is: %f" % p)
-  print("Effect size: ", association(dataset_tbl, method="cramer"))
-
-  domain_oriented_analysis(dataframe)
-
+  debian_packages = df[df['rank_num'] == 5.0]
+  archlinux_packages = df1[df1['rank_num'] == 5.0]
+  get_correlation(debian_packages, archlinux_packages, check_common_packages_in_debian_and_archlinux)
 
 if __name__ == '__main__':
     main()
