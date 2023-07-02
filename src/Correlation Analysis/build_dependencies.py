@@ -2,7 +2,6 @@ import scipy.stats as stats
 from scipy.stats.contingency import association
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -41,31 +40,13 @@ def domain_oriented_analysis(df1):
   print('Number of domains with statistically significant correlation: ', len(significant))
 
 
-def main():
-  # Load Tables`
-  distributions_tbl = pd.read_csv("../../data/distributions.csv", sep=",")
-  stats_build = pd.read_csv("../../data/stats_build.csv", sep=',')
-  package_dep_tbl = pd.read_csv("../../data/debian_dependency_graph_tbl.csv", sep=",")
-  stats_build_mod = pd.merge(stats_build, distributions_tbl, left_on="distribution", right_on="id")
-
-  package_dep_tbl_subset = package_dep_tbl[package_dep_tbl['packages'] != package_dep_tbl['dependencies']]
-  stats_build_filtered_debian = stats_build_mod[(stats_build_mod["name_y"] == "debian")]
-  stats_build_filtered = stats_build_filtered_debian[stats_build_filtered_debian["architecture"] == "amd64"]
-  stats_build_filtered = stats_build_filtered[stats_build_filtered["suite"] == 'unstable']
-  stats_build_sorted = stats_build_filtered.sort_values(by='build_date', ascending=False)
-  stats_build_sorted['trim_date'] = pd.to_datetime(stats_build_sorted['build_date']).dt.date
-  stats_build_sorted = stats_build_sorted.drop(['id_x', 'id_y', 'distribution'], axis=1)
-
-  # Get the latest instance of the package.
-  stats_build_sorted_first_instance = stats_build_sorted.groupby("name_x").first().reset_index()
-  stats_build_sorted_first_instance = stats_build_sorted_first_instance.rename(columns={'name_x': 'packages'})
-
-  pkg_deb_merge_stats_build = pd.merge(package_dep_tbl_subset, stats_build_sorted_first_instance, how='left',
+def get_latest_correlation(package_dep_tbl_subset, stats_build_sorted_instance):
+  pkg_deb_merge_stats_build = pd.merge(package_dep_tbl_subset, stats_build_sorted_instance, how='left',
                                        left_on='packages', right_on='packages', validate='m:1')
   deb_status = []
   for dependency in pkg_deb_merge_stats_build['dependencies']:
     try:
-      package = stats_build_sorted_first_instance[stats_build_sorted_first_instance['packages'] == dependency]
+      package = stats_build_sorted_instance[stats_build_sorted_instance['packages'] == dependency]
       status = package['status']
       deb_status.append(status.item())
     except:
@@ -90,8 +71,33 @@ def main():
   print("Values of chi-quare statistics is: %f" % stat)
   print(f"p-value is: {p:.20f}")
   print("Effect size: ", association(dataset_tbl, method="cramer"))
+  print("---------------------------")
 
   domain_oriented_analysis(df1)
+
+def main():
+  # Load Tables`
+  distributions_tbl = pd.read_csv("../../data/distributions.csv", sep=",")
+  stats_build = pd.read_csv("../../data/stats_build.csv", sep=',')
+  package_dep_tbl = pd.read_csv("../../data/debian_dependency_graph_tbl.csv", sep=",")
+  stats_build_mod = pd.merge(stats_build, distributions_tbl, left_on="distribution", right_on="id")
+
+  package_dep_tbl_subset = package_dep_tbl[package_dep_tbl['packages'] != package_dep_tbl['dependencies']]
+  stats_build_filtered_debian = stats_build_mod[(stats_build_mod["name_y"] == "debian")]
+  stats_build_filtered = stats_build_filtered_debian[stats_build_filtered_debian["architecture"] == "amd64"]
+  stats_build_filtered = stats_build_filtered[stats_build_filtered["suite"] == 'unstable']
+  stats_build_sorted = stats_build_filtered.sort_values(by='build_date', ascending=False)
+  stats_build_sorted['trim_date'] = pd.to_datetime(stats_build_sorted['build_date']).dt.date
+  stats_build_sorted = stats_build_sorted.drop(['id_x', 'id_y', 'distribution'], axis=1)
+
+  # Get the latest instance of the package.
+  stats_build_sorted['rank_num'] = stats_build_sorted.groupby("name_x")['trim_date'].rank(method="first",
+                                                                                          ascending=False)
+  stats_build_sorted = stats_build_sorted.rename(columns={'name_x': 'packages'})
+  stats_build_sorted_instance = stats_build_sorted[stats_build_sorted['rank_num'] == 1.0]
+  get_latest_correlation(package_dep_tbl_subset, stats_build_sorted_instance)
+  stats_build_sorted_instance = stats_build_sorted[stats_build_sorted['rank_num'] == 5.0]
+  get_latest_correlation(package_dep_tbl_subset, stats_build_sorted_instance)
 
 if __name__ == '__main__':
   main()
